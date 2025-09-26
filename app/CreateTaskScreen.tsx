@@ -4,18 +4,12 @@ import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
-import {addDoc, collection, deleteDoc, doc, Timestamp, updateDoc} from "firebase/firestore";
-import { db } from "@/firebaseConfig";
 import InputField from "../components/InputField";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {getAuth} from "@firebase/auth";
 import CustomButton from "@/components/CustomButton";
 import {Task} from "@/interfaces/interface";
-import { RootStackParamList } from "@/types/navigation";
-import {RouteProp, useRoute} from "@react-navigation/core";
 import {Stack, useLocalSearchParams} from "expo-router";
-
-type CreateTaskRouteProp = RouteProp<RootStackParamList, "CreateTaskScreen">;
+import {deleteTask, saveTask} from "@/services/firebaseTaskServices";
 
 export default function CreateTaskScreen() {
     const navigation = useNavigation();
@@ -24,7 +18,7 @@ export default function CreateTaskScreen() {
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [dueDate, setDueDate] = useState<Date | null>(null);
+    const [dueDate, setDueDate] = useState<Date | null>(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Low");
     const [completed, setCompleted] = useState(false);
@@ -49,38 +43,13 @@ export default function CreateTaskScreen() {
         }
 
         try {
-            const auth = getAuth();
-            const user = auth.currentUser;
+            await saveTask(
+                { title, description, dueDate, priority, completed },
+                isEditing,
+                task?.id
+            );
 
-            if (!user) {
-                Alert.alert("Error", "No user is signed in.");
-                return;
-            }
-
-            if (isEditing) {
-                // 🔹 Update existing task
-                const taskRef = doc(db, "users", user.uid, "tasks", task.id);
-                await updateDoc(taskRef, {
-                    title,
-                    description,
-                    dueDate: dueDate ? Timestamp.fromDate(dueDate) : null,
-                    priority,
-                    completed,
-                });
-                Alert.alert("Success", "Task updated successfully!");
-            } else {
-                // 🔹 Create new task
-                await addDoc(collection(db, "users", user.uid, "tasks"), {
-                    title,
-                    description,
-                    dueDate: dueDate ? Timestamp.fromDate(dueDate) : null,
-                    priority,
-                    completed,
-                    createdAt: Timestamp.fromDate(new Date()),
-                });
-                Alert.alert("Success", "Task created successfully!");
-            }
-
+            Alert.alert("Success", isEditing ? "Task updated successfully!" : "Task created successfully!");
             navigation.goBack();
         } catch (error: any) {
             Alert.alert("Error", error.message);
@@ -103,12 +72,7 @@ export default function CreateTaskScreen() {
     };
     const handleDelete = async () => {
         try {
-            const auth = getAuth();
-            const user = auth.currentUser;
-
-            if (!user) return;
-
-            await deleteDoc(doc(db, "users", user.uid, "tasks", task!!.id));
+            await deleteTask(task!!.id);
             Alert.alert("Deleted", "Task deleted successfully!");
             navigation.goBack();
         } catch (error: any) {

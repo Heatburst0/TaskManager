@@ -1,22 +1,20 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getAuth, signOut } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
 import InputField from "@/components/InputField";
 import CustomButton from "@/components/CustomButton";
-import {Stack} from "expo-router";
+import {Stack, useRouter} from "expo-router";
 import {SafeAreaView} from "react-native-safe-area-context";
+import {getCurrentUserEmail, logout} from "@/services/firebaseAuthServices";
 
 export default function ProfileScreen() {
-    const navigation = useNavigation();
-    const auth = getAuth();
-    const user = auth.currentUser;
+    const router = useRouter();
 
-    const [email, setEmail] = useState(user?.email || "");
+    const [email, setEmail] = useState(getCurrentUserEmail());
     const [phone, setPhone] = useState("");
 
-    const handleLogout = async () => {
+    const handleLogout = () => {
         Alert.alert("Log Out", "Are you sure you want to log out?", [
             { text: "Cancel", style: "cancel" },
             {
@@ -24,9 +22,9 @@ export default function ProfileScreen() {
                 style: "destructive",
                 onPress: async () => {
                     try {
-                        await signOut(auth);
+                        await logout();
                         Alert.alert("Success", "You have logged out.");
-                        navigation.navigate("(auth)/Introscreen" as never);
+                        router.replace("/Introscreen");
                     } catch (error: any) {
                         Alert.alert("Error", error.message);
                     }
@@ -41,7 +39,7 @@ export default function ProfileScreen() {
             <SafeAreaView className="flex-1 bg-white px-5 pt-2">
                 {/* Header */}
                 <View className="flex-row items-center mb-6 mt-5">
-                    <TouchableOpacity onPress={() => navigation.goBack()} className="mr-3">
+                    <TouchableOpacity onPress={() => router.back()} className="mr-3">
                         <Ionicons name="arrow-back" size={24} color="black" />
                     </TouchableOpacity>
 

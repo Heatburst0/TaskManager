@@ -1,13 +1,22 @@
 import React from "react";
-import { TouchableOpacity, Text } from "react-native";
+import {TouchableOpacity, Text, View} from "react-native";
 
-export default function CustomButton({ title, onPress } : {title: string, onPress: () => void}) {
+export default function CustomButton({
+                                         title,
+                                         onPress,
+                                         icon,
+                                     }: {
+    title: string;
+    onPress: () => void;
+    icon?: React.ReactNode;
+}) {
     return (
         <TouchableOpacity
-            className="bg-indigo-500 rounded-xl py-4 items-center mt-2"
             onPress={onPress}
+            className="flex-row items-center justify-center bg-indigo-500 rounded-xl mt-3 py-4 px-6"
         >
-            <Text className="text-white text-lg font-semibold">{title}</Text>
+            <Text className="text-white font-semibold text-lg mr-2">{title}</Text>
+            {icon && <View>{icon}</View>}
         </TouchableOpacity>
     );
 }

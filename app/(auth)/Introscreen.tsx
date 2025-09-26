@@ -1,8 +1,8 @@
-import {View, Text, TouchableOpacity, Image} from 'react-native'
+import {View, Text} from 'react-native'
 import React from 'react';
 import {useRouter} from "expo-router";
-import ArrowRight from "@/components/ArrowRight";
-import {images} from"@/constants/images"
+import CustomButton from "@/components/CustomButton";
+import {Ionicons} from "@expo/vector-icons";
 
 const Introscreen = () => {
     const router = useRouter();
@@ -11,11 +11,12 @@ const Introscreen = () => {
         <View className="flex-1 bg-white justify-between items-center p-6">
             <View className="flex-1 justify-center items-center">
                 {/* Logo Image instead of tick block */}
-                <Image
-                    source={images.sampleImage}
-                    className={"w-32 h-32 mb-6"}
-                    resizeMode={"contain"}
-                    />
+                <View className="items-center mb-6">
+                    <View className="bg-indigo-500 rounded-2xl p-6 mb-6">
+                        <Text className="text-5xl text-white font-bold">✓</Text>
+                    </View>
+                    <Text className="text-3xl font-bold text-gray-800">Task Manager!</Text>
+                </View>
                 <Text className="text-2xl font-bold text-gray-800">
                     Get things done.
                 </Text>
@@ -24,12 +25,11 @@ const Introscreen = () => {
                 </Text>
             </View>
 
-            <TouchableOpacity
-                className="bg-indigo-500 rounded-full p-5 mb-10 self-end"
-                onPress={() => router.push("/SignUpScreen")} // expo-router navigation
-            >
-                <ArrowRight/>
-            </TouchableOpacity>
+            <CustomButton
+                title="Let’s get started"
+                onPress={() => router.replace("/SignUpScreen")}
+                icon={<Ionicons name="arrow-forward" size={20} color="white" />} // 👈 white arrow
+            />
         </View>
     );
 }

@@ -6,6 +6,7 @@ import InputField from "@/components/InputField";
 import CustomButton from "@/components/CustomButton";
 import { Stack, useRouter } from "expo-router";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
+import {login} from "@/services/firebaseAuthServices";
 
 export default function SignInScreen() {
     const [email, setEmail] = useState("");
@@ -14,36 +15,12 @@ export default function SignInScreen() {
     const router = useRouter();
 
     const handleLogin = async () => {
-        if (!email.trim() || !password.trim()) {
-            Alert.alert("Missing Fields", "Please fill in all fields.");
-            return;
-        }
-
         setLoading(true);
-
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            await login(email, password);
             router.replace("/HomeScreen");
         } catch (err: any) {
-            let message = "Something went wrong. Please try again.";
-
-            switch (err.code) {
-                case "auth/invalid-email":
-                    message = "Invalid email format.";
-                    break;
-                case "auth/user-not-found":
-                    message = "No account found with this email.";
-                    break;
-                case "auth/wrong-password":
-                    message = "Incorrect password. Please try again.";
-                    break;
-                case "auth/too-many-requests":
-                    message = "Too many failed attempts. Try again later.";
-                    break;
-            }
-
-            Alert.alert("Login Failed", message);
-            console.log(err);
+            Alert.alert("Login Failed", err.message);
         } finally {
             setLoading(false);
         }
@@ -82,7 +59,7 @@ export default function SignInScreen() {
 
                 <View className="flex-row justify-center mt-6">
                     <Text className="text-gray-500">Don’t have an account? </Text>
-                    <TouchableOpacity onPress={() => router.push("/SignUpScreen")}>
+                    <TouchableOpacity onPress={() => router.replace("/SignUpScreen")}>
                         <Text className="text-indigo-500 font-semibold">Get Started!</Text>
                     </TouchableOpacity>
                 </View>
