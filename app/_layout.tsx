@@ -1,24 +1,43 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { Stack } from "expo-router";
+import './globals.css'
+import {auth} from '@/firebaseConfig';
+import {useEffect, useState} from "react";
+import {onAuthStateChanged, User} from "@firebase/auth";
+import {ActivityIndicator, View} from "react-native";
+import {SafeAreaView} from "react-native-safe-area-context";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+    const [initializing, setInitializing] = useState(true);
+    const [user, setUser] = useState<User | null>(null);
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setUser(user);
+            setInitializing(false);
+        });
+
+        return unsubscribe;
+    }, []);
+
+    if (initializing) {
+        // Show loading while checking auth state
+        return (
+            <View className="flex-1 justify-center items-center">
+                <ActivityIndicator size="large" color="#000" />
+            </View>
+        );
+    }
+
+    return (
+        <Stack>
+                {user ? (
+                    <Stack.Screen name="HomeScreen" options={{ headerShown: false }} />
+                ) : (
+                    <Stack.Screen name="(auth)/Introscreen" options={{ headerShown: false }} />
+                )}
+            </Stack>
+
+
+    );
 }
