@@ -132,7 +132,7 @@ export default function HomeScreen() {
                     <View className="flex-row items-center mb-3">
                         {/* Profile Icon */}
                         <TouchableOpacity
-                            onPress={() => {}}
+                            onPress={() => router.push("/ProfileScreen")}
                             className="w-12 h-12 rounded-full bg-indigo-200 items-center justify-center mr-3"
                         >
                             <Ionicons name="person" size={22} color="black" />
@@ -201,7 +201,7 @@ export default function HomeScreen() {
                                             {todayTasks.map((task) => (
                                                 <TaskItem
                                                     key={task.id}
-                                                    {...task}
+                                                    task={task}
                                                     onToggleComplete={() => handleToggleComplete(task)}
                                                 />
                                             ))}
@@ -215,7 +215,7 @@ export default function HomeScreen() {
                                             {tomorrowTasks.map((task) => (
                                                 <TaskItem
                                                     key={task.id}
-                                                    {...task}
+                                                    task={task}
                                                     onToggleComplete={() => handleToggleComplete(task)}
                                                 />
                                             ))}
@@ -229,7 +229,7 @@ export default function HomeScreen() {
                                             {weekTasks.map((task) => (
                                                 <TaskItem
                                                     key={task.id}
-                                                    {...task}
+                                                    task={task}
                                                     onToggleComplete={() => handleToggleComplete(task)}
                                                 />
                                             ))}
@@ -241,7 +241,7 @@ export default function HomeScreen() {
                                             {laterTasks.map((task) => (
                                                 <TaskItem
                                                     key={task.id}
-                                                    {...task}
+                                                    task={task}
                                                     onToggleComplete={() => handleToggleComplete(task)}
                                                 />
                                             ))}

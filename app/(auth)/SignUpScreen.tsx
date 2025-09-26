@@ -1,46 +1,57 @@
 import React, { useState } from "react";
-import {View, Text, TouchableOpacity, StatusBar, ActivityIndicator} from "react-native";
+import {View, Text, TouchableOpacity, StatusBar, ActivityIndicator, Alert} from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/firebaseConfig";
 import InputField from "@/components/InputField";
 import CustomButton from "@/components/CustomButton";
 import {Stack, useRouter} from "expo-router";
+import SocialLoginButtons from "@/components/SocialLoginButtons";
 
 export default function SignUpScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     const handleSignUp = async () => {
-        // Reset previous error
-        setError(null);
         setLoading(true);
+
         // Basic validation
         if (!email.trim() || !password.trim()) {
-            setError("Please fill in all fields.");
+            Alert.alert("Missing Fields", "Please fill in all fields.");
+            setLoading(false);
             return;
         }
 
         try {
             await createUserWithEmailAndPassword(auth, email, password);
-            // Navigate to home or next screen if successful
             router.push("/SignInScreen");
-        } catch (err) {
-            // @ts-ignore
-            setError(err.message);
+        } catch (err: any) {
+            let message = "Something went wrong. Please try again.";
+
+            switch (err.code) {
+                case "auth/invalid-email":
+                    message = "Invalid email format.";
+                    break;
+                case "auth/email-already-in-use":
+                    message = "This email is already registered.";
+                    break;
+                case "auth/weak-password":
+                    message = "Password should be at least 6 characters.";
+                    break;
+            }
+            Alert.alert("Sign Up Failed", message);
             console.log(err);
-        }finally {
+        } finally {
             setLoading(false);
         }
     };
-
 
     return (
         <>
             <Stack.Screen options={{ headerShown: false }} />
             <View className="flex-1 bg-white justify-center px-6">
+                {/* Header */}
                 <View className="items-center mb-6">
                     <View className="bg-indigo-500 rounded-2xl p-6 mb-6">
                         <Text className="text-5xl text-white font-bold">✓</Text>
@@ -50,6 +61,7 @@ export default function SignUpScreen() {
                     </Text>
                 </View>
 
+                {/* Inputs */}
                 <InputField label="Email Address" value={email} onChangeText={setEmail} />
                 <InputField
                     label="Password"
@@ -57,8 +69,8 @@ export default function SignUpScreen() {
                     value={password}
                     onChangeText={setPassword}
                 />
-                {error && <Text className="text-red-500">{error}</Text>}
 
+                {/* Button */}
                 {loading ? (
                     <View className="flex-row justify-center py-3">
                         <ActivityIndicator size="large" color="#4f46e5" />
@@ -67,15 +79,11 @@ export default function SignUpScreen() {
                     <CustomButton title="Sign Up" onPress={handleSignUp} />
                 )}
 
+                {/* Social logins */}
                 <Text className="text-center text-gray-500 mt-4">Or sign up with</Text>
+                <SocialLoginButtons />
 
-                {/* Social login buttons (Google/Facebook/Apple) */}
-                <View className="flex-row justify-center mt-4 gap-6">
-                    <View className="bg-blue-600 w-12 h-12 rounded-full" />
-                    <View className="bg-red-500 w-12 h-12 rounded-full" />
-                    <View className="bg-black w-12 h-12 rounded-full" />
-                </View>
-
+                {/* Redirect */}
                 <View className="flex-row justify-center mt-6">
                     <Text className="text-gray-500">Already an account? </Text>
                     <TouchableOpacity onPress={() => router.push("/SignInScreen")}>
@@ -84,6 +92,5 @@ export default function SignUpScreen() {
                 </View>
             </View>
         </>
-
     );
 }

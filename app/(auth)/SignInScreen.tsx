@@ -1,38 +1,51 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import {View, Text, TouchableOpacity, ActivityIndicator, Alert} from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/firebaseConfig";
 import InputField from "@/components/InputField";
 import CustomButton from "@/components/CustomButton";
 import { Stack, useRouter } from "expo-router";
+import SocialLoginButtons from "@/components/SocialLoginButtons";
 
 export default function SignInScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     const handleLogin = async () => {
-        setError(null);
-
         if (!email.trim() || !password.trim()) {
-            setError("Please fill in all fields.");
+            Alert.alert("Missing Fields", "Please fill in all fields.");
             return;
         }
 
-        setLoading(true); // Start loading
+        setLoading(true);
 
         try {
-            const res = await signInWithEmailAndPassword(auth, email, password);
-            console.log(res);
-            // Navigate to home after successful login
-            router.replace("/CreateTaskScreen");
-        } catch (err) {
-            // @ts-ignore
-            setError(err.message);
+            await signInWithEmailAndPassword(auth, email, password);
+            router.replace("/HomeScreen");
+        } catch (err: any) {
+            let message = "Something went wrong. Please try again.";
+
+            switch (err.code) {
+                case "auth/invalid-email":
+                    message = "Invalid email format.";
+                    break;
+                case "auth/user-not-found":
+                    message = "No account found with this email.";
+                    break;
+                case "auth/wrong-password":
+                    message = "Incorrect password. Please try again.";
+                    break;
+                case "auth/too-many-requests":
+                    message = "Too many failed attempts. Try again later.";
+                    break;
+            }
+
+            Alert.alert("Login Failed", message);
+            console.log(err);
         } finally {
-            setLoading(false); // Stop loading in both success and error
+            setLoading(false);
         }
     };
 
@@ -54,9 +67,7 @@ export default function SignInScreen() {
                     value={password}
                     onChangeText={setPassword}
                 />
-                {error && <Text className="text-red-500 mb-2">{error}</Text>}
 
-                {/* Show loader instead of button when loading */}
                 {loading ? (
                     <View className="flex-row justify-center py-3">
                         <ActivityIndicator size="large" color="#4f46e5" />
@@ -67,11 +78,7 @@ export default function SignInScreen() {
 
                 <Text className="text-center text-gray-500 mt-4">Or sign in with</Text>
 
-                <View className="flex-row justify-center mt-4 space-x-6">
-                    <View className="bg-blue-600 w-12 h-12 rounded-full" />
-                    <View className="bg-red-500 w-12 h-12 rounded-full" />
-                    <View className="bg-black w-12 h-12 rounded-full" />
-                </View>
+                <SocialLoginButtons />
 
                 <View className="flex-row justify-center mt-6">
                     <Text className="text-gray-500">Don’t have an account? </Text>
